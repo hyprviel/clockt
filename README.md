@@ -1,7 +1,6 @@
-# clock TUI
+# clockt
 
-Simply, a digital clock that runs into your terminal.  
-Simple, fast, and less resource used.
+Simply, a digital clock that runs in your terminal.  
 
 Future plans:
 - Add automatic countdown to new year
