@@ -33,8 +33,10 @@ pub fn render(frame: &mut Frame, font: &FIGfont, config: &Config) {
     let second = rn.second();
     let time = match config.mode {
         1 => rn.format("%H:%M:%S").to_string(), // 12:46:40
-        2 => rn.format(if second % 2 == 0 { "%H:%M" } else { "%H  %M" }).to_string(),
-        _ => String::new()
+        2 => rn
+            .format(if second % 2 == 0 { "%H:%M" } else { "%H  %M" })
+            .to_string(),
+        _ => String::new(),
     };
 
     let time_figure = font.convert(&time.to_string()).unwrap();
