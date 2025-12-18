@@ -1,12 +1,12 @@
 mod utils;
-use crate::utils::{Config, render, update};
-use anyhow::Result;
+use anyhow::{Result, anyhow};
+use figlet_rs::FIGfont;
+use utils::{config::*, render::*};
 
 fn main() -> Result<()> {
-    let cfg = Config { mode: 1 };
-    let font = figlet_rs::FIGfont::standard().expect("there's error dude 💔🥀");
+    let cfg = get_settings();
+    let font = FIGfont::standard().map_err(|err| anyhow!(err))?;
 
-    // setup terminal
     let mut terminal = ratatui::init();
     loop {
         terminal.draw(|f| render(f, &font, &cfg))?;
