@@ -1,11 +1,15 @@
 use std::{fs::File, io::Read};
 
+#[derive(Default)]
 pub enum DisplayFormat {
+    #[default]
     FormatHM,
     FormatHMS,
 }
 
+#[derive(Default)]
 pub enum TimeFormat {
+    #[default]
     Format12h,
     Format24h,
 }
@@ -15,41 +19,53 @@ pub struct Config {
     pub display_format: DisplayFormat,
 }
 
-// TODO: ew, gross! refactor this thing soon!
+macro_rules! r#match {
+    ($ident:ident, $ty:ty, $( $res:expr, $val:expr )*) => {
+        match $ident {
+            $($res => $val,)*
+            _ => <$ty>::default()
+        }
+    };
+}
+
 pub fn get_settings() -> Config {
-    let mut file = File::open("config.conf").expect("error opening file");
+    let mut file = File::open("config.conf")
+        .unwrap_or_else(|_| File::create("config.conf").expect("unable to create file"));
+
     let mut content = String::with_capacity(1024);
-    let _ = file
-        .read_to_string(&mut content)
-        .map_err(|err| panic!("{}", err));
+    file.read_to_string(&mut content)
+        .expect("unable to read file");
 
-    let mut display_format = DisplayFormat::FormatHM; // default
-    let mut time_format = TimeFormat::Format12h; // default
+    let mut config = Config {
+        time_format: TimeFormat::Format12h,
+        display_format: DisplayFormat::FormatHM,
+    };
 
-    for line in content.lines() {
-        let line = line.trim();
-        if line.is_empty() || line.starts_with('#') {
-            continue; // skip comment atau baris kosong
-        }
-        if let Some((key, value)) = line.split_once('=') {
-            match key.trim() {
-                "timeFormat" => match value.trim() {
-                    "12h" => time_format = TimeFormat::Format12h,
-                    "24h" => time_format = TimeFormat::Format24h,
-                    _ => (),
-                },
-                "displayFormat" => match value.trim().to_lowercase().as_str() {
-                    "hms" => display_format = DisplayFormat::FormatHMS,
-                    "hm" => display_format = DisplayFormat::FormatHM,
-                    _ => (),
-                },
-                _ => (),
+    let kv_pair: Vec<(&str, &str)> = content
+        .lines()
+        .filter_map(|line| line.split_once("="))
+        .map(|(k, v)| (k.trim(), v.trim()))
+        .collect();
+
+    for (key, value) in kv_pair {
+        match key {
+            "timeFormat" => {
+                config.time_format = r#match!(
+                    value, TimeFormat,
+                    "12h", TimeFormat::Format12h
+                    "24h", TimeFormat::Format24h
+                );
             }
+            "displayFormat" => {
+                config.display_format = r#match!(
+                    value, DisplayFormat,
+                    "hm", DisplayFormat::FormatHM
+                    "hms", DisplayFormat::FormatHMS
+                )
+            }
+            _ => {}
         }
     }
 
-    Config {
-        time_format: time_format,
-        display_format: display_format,
-    }
+    config
 }

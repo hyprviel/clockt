@@ -17,40 +17,40 @@ fn get_time(rn: &chrono::DateTime<Local>, config: &Config) -> String {
         TimeFormat::Format24h => "%H",
     };
 
+    let fmt_col = if rn.second() % 2 == 0 {
+        format!("{}:%M", fmt_h)
+    } else {
+        format!("{}  %M", fmt_h)
+    };
+
     match config.display_format {
         DisplayFormat::FormatHMS => rn.format(&format!("{}:%M:%S", fmt_h)).to_string(),
-        DisplayFormat::FormatHM => rn
-            .format(&if rn.second() % 2 == 0 {
-                format!("{}:%M", fmt_h)
-            } else {
-                format!("{}  %M", fmt_h)
-            })
-            .to_string(),
+        DisplayFormat::FormatHM => rn.format(&fmt_col).to_string(),
     }
+}
+
+macro_rules! span_am_pm {
+    ($am_pm:ident, $label:tt) => {
+        Span::styled(
+            $label,
+            if $am_pm == $label {
+                Style::default().add_modifier(Modifier::REVERSED)
+            } else {
+                Style::default()
+            },
+        )
+    };
 }
 
 // FIXME: nunggu 1 detik dulu baru cek, jangan tiap iterasi dicek
 fn handle_format12h(rn: &chrono::DateTime<Local>) -> Paragraph<'static> {
     let am_pm = rn.format("%p").to_string();
 
-    macro_rules! span_am_pm {
-        ($label:tt) => {
-            Span::styled(
-                $label,
-                if am_pm == $label {
-                    Style::default().add_modifier(Modifier::REVERSED)
-                } else {
-                    Style::default()
-                },
-            )
-        };
-    }
-
     Paragraph::new(Line::from(vec![
         Span::raw("\n"),
-        span_am_pm!("AM"),
+        span_am_pm!(am_pm, "AM"),
         Span::raw("/"),
-        span_am_pm!("PM"),
+        span_am_pm!(am_pm, "PM"),
     ]))
     .alignment(Alignment::Center)
 }
