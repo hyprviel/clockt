@@ -10,9 +10,10 @@ User preference
 - Set it within program's flag! (see: Flags)
 
 ## Flags
-**time**
-    -t12    set time to 12-hours format
-    -t24    set time to 24-hours format
-**display**
-    -dHM    displaying hour:minute format
-    -dHMS   displaying hour:minute:second format
+**time**  
+* -t12    set time to 12-hours format
+* -t24    set time to 24-hours format
+
+**display**  
+* -dHM    displaying hour:minute format
+* -dHMS   displaying hour:minute:second format
